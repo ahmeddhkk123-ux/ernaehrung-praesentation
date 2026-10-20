@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="de" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERNÄHRUNG - Wie beeinflusst unsere Ernährung unser Leben?</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Three.js for 3D Background -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#050E0A',
+              card: 'rgba(12, 28, 20, 0.78)',
+              emerald: '#10B981',
+              mint: '#34D399',
+              amber: '#F59E0B',
+              rose: '#F43F5E',
+              cyan: '#06B6D4'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #040A07;
+      color: #F1F5F9;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #040A07;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #10B981;
+      border-radius: 3px;
+    }
+
+    /* Glassmorphism Styling */
+    .glass-card {
+      background: rgba(10, 24, 17, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(52, 211, 153, 0.18);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-card-interactive {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .glass-card-interactive:hover {
+      border-color: rgba(52, 211, 153, 0.45);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 25px 50px rgba(16, 185, 129, 0.2);
+    }
+
+    .glass-pill {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    /* 3D Slide Viewport & Transformations */
+    .slide-viewport {
+      perspective: 1200px;
+    }
+
+    .slide-card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateZ(-250px) rotateY(12deg) scale(0.92);
+      transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.6s;
+      pointer-events: none;
+    }
+
+    .slide-card.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateZ(0px) rotateY(0deg) scale(1);
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .slide-card.prev-out {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateZ(-250px) rotateY(-12deg) scale(0.92);
+      pointer-events: none;
+    }
+
+    /* Glowing Text Effects */
+    .glow-text {
+      text-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    }
+
+    /* Comparison Split Slider */
+    .before-after-slider {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      user-select: none;
+    }
+
+    /* Photo Frame Zoom Hover */
+    .img-zoom {
+      transition: transform 0.5s ease;
+    }
+    .img-zoom:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="h-full select-none flex flex-col justify-between relative overflow-hidden">
+
+  <!-- 3D Three.js Food & Vitality Background Canvas -->
+  <div id="canvas-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+  <!-- TOP HEADER & CONTROLS -->
+  <header class="relative z-20 flex justify-between items-center px-6 py-3 max-w-7xl mx-auto w-full">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+        <i class="fa-solid fa-apple-whole text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-extrabold text-lg text-white leading-tight tracking-wide">ERNÄHRUNG <span class="text-emerald-400 font-light text-sm">| & Leben</span></h1>
+        <p class="text-[11px] text-slate-300">Vortrag von <strong class="text-emerald-300">Omar Al sharari</strong> • 19.10.2026</p>
+      </div>
+    </div>
+
+    <!-- Interactive Navigation & Controls Toolbar -->
+    <div class="flex items-center space-x-2 bg-slate-950/80 p-1.5 rounded-full border border-emerald-500/30 backdrop-blur-md shadow-2xl">
+      <button id="btn-sound" onclick="toggleSound()" class="px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-emerald-500/20 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-volume-xmark text-emerald-400" id="sound-icon"></i>
+        <span class="hidden md:inline">Audio</span>
+      </button>
+      <button id="btn-notes" onclick="toggleNotes()" class="px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-emerald-500/20 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-sticky-note text-amber-400"></i>
+        <span class="hidden md:inline">Notizen (N)</span>
+      </button>
+      <button id="btn-autoplay" onclick="toggleAutoplay()" class="px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-emerald-500/20 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-play text-cyan-400" id="autoplay-icon"></i>
+        <span class="hidden md:inline" id="autoplay-text">Auto</span>
+      </button>
+      <button onclick="toggleFullscreen()" class="p-2 rounded-full text-xs text-slate-300 hover:text-white hover:bg-emerald-500/20 transition" title="Vollbild (F)">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- PRESENTER NOTES POPUP PANEL -->
+  <div id="presenter-notes" class="hidden fixed top-16 right-6 z-30 w-80 glass-card p-5 rounded-2xl border-amber-500/40 text-xs space-y-2 shadow-2xl">
+    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+      <span class="font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-lightbulb"></i> Moderations-Hinweis</span>
+      <button onclick="toggleNotes()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p id="note-content" class="text-slate-200 leading-relaxed">
+      Begrüßen Sie das Publikum und die Prüfer. Betonen Sie, dass Ernährung kein einfaches Verbotssystem ist, sondern die direkte Grundlage unserer täglichen Lebensqualität bildet.
+    </p>
+  </div>
+
+  <!-- SLIDES PROGRESS BAR -->
+  <div class="w-full bg-slate-900/60 h-1 relative z-20">
+    <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400 w-[11%] transition-all duration-500"></div>
+  </div>
+
+  <!-- MAIN PRESENTATION SLIDES CONTAINER -->
+  <main class="relative z-10 max-w-7xl mx-auto w-full px-4 md:px-8 my-auto flex-1 flex items-center justify-center slide-viewport py-4 min-h-[620px]">
+
+    <!-- SLIDE 1: Cover / Title Slide -->
+    <div class="slide-card active flex flex-col justify-center items-center text-center p-4 md:p-8" id="slide-0">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center w-full max-w-6xl">
+        <div class="lg:col-span-7 text-left space-y-4">
+          <div class="glass-pill px-4 py-1.5 rounded-full text-emerald-300 text-xs font-semibold inline-flex items-center gap-2 border border-emerald-500/30">
+            <i class="fa-solid fa-leaf text-emerald-400"></i> Wissenschaftlicher Vortrag
+          </div>
+          
+          <h1 class="font-display font-black text-4xl md:text-6xl lg:text-6xl text-white tracking-tight leading-tight glow-text">
+            ERNÄHRUNG
+          </h1>
+          <p class="text-xl md:text-2xl font-light text-slate-200 leading-snug">
+            Wie beeinflusst unsere Ernährung unser Leben?
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+            <div class="glass-card p-3.5 rounded-2xl flex items-center space-x-3 border-l-4 border-emerald-500">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+                <i class="fa-solid fa-user-pen text-lg"></i>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Referent</div>
+                <div class="text-sm font-semibold text-white">Omar Al sharari</div>
+              </div>
+            </div>
+
+            <div class="glass-card p-3.5 rounded-2xl flex items-center space-x-3 border-l-4 border-cyan-500">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">
+                <i class="fa-solid fa-calendar-day text-lg"></i>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Datum</div>
+                <div class="text-sm font-semibold text-white">19.10.2026</div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="nextSlide()" class="mt-4 px-8 py-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+            <span>Vortrag Starten</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Slide 1 Main Photo Card -->
+        <div class="lg:col-span-5 hidden lg:block">
+          <div class="glass-card p-3 rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/30 relative group">
+            <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80" alt="Fresh Whole Foods" class="rounded-2xl h-96 w-full object-cover img-zoom">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent rounded-2xl flex flex-col justify-end p-6">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Vitalität & Nährstoffe</span>
+              <h3 class="text-lg font-bold text-white">Die Grundlage unseres Wohlbefindens</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Agenda / Table of Contents -->
+    <div class="slide-card flex flex-col justify-center p-4 md:p-8" id="slide-1">
+      <div class="mb-6">
+        <span class="text-emerald-400 font-mono text-xs font-bold tracking-widest uppercase">01. INHALTSVERZEICHNIS</span>
+        <h2 class="font-display text-3xl md:text-5xl font-bold text-white mt-1">Was erwartet uns?</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Item 01 -->
+        <div onclick="goToSlide(2)" class="glass-card glass-card-interactive p-5 rounded-2xl cursor-pointer group flex flex-col justify-between h-56 border-t-2 border-emerald-400 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition">
+          <div class="relative z-10 flex justify-between items-start">
+            <span class="text-3xl font-display font-extrabold text-emerald-400">01</span>
+            <i class="fa-solid fa-scale-balanced text-emerald-400 text-xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h3 class="font-bold text-white text-base leading-snug">Gesunde & ungesunde Ernährung</h3>
+            <p class="text-[11px] text-slate-300 mt-1">Gegenüberstellung im Alltag</p>
+          </div>
+          <span class="relative z-10 text-xs text-emerald-400 flex items-center gap-1">Details <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+        </div>
+
+        <!-- Item 02 -->
+        <div onclick="goToSlide(3)" class="glass-card glass-card-interactive p-5 rounded-2xl cursor-pointer group flex flex-col justify-between h-56 border-t-2 border-cyan-400 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition">
+          <div class="relative z-10 flex justify-between items-start">
+            <span class="text-3xl font-display font-extrabold text-cyan-400">02</span>
+            <i class="fa-solid fa-heart-pulse text-cyan-400 text-xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h3 class="font-bold text-white text-base leading-snug">Einfluss auf unser Leben</h3>
+            <p class="text-[11px] text-slate-300 mt-1">Die 4 Lebensbereiche</p>
+          </div>
+          <span class="relative z-10 text-xs text-cyan-400 flex items-center gap-1">Details <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+        </div>
+
+        <!-- Item 03 -->
+        <div onclick="goToSlide(4)" class="glass-card glass-card-interactive p-5 rounded-2xl cursor-pointer group flex flex-col justify-between h-56 border-t-2 border-amber-400 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition">
+          <div class="relative z-10 flex justify-between items-start">
+            <span class="text-3xl font-display font-extrabold text-amber-400">03</span>
+            <i class="fa-solid fa-cubes text-amber-400 text-xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h3 class="font-bold text-white text-base leading-snug">Die 6 wichtigsten Nährstoffe</h3>
+            <p class="text-[11px] text-slate-300 mt-1">Essenzielle Bausteine</p>
+          </div>
+          <span class="relative z-10 text-xs text-amber-400 flex items-center gap-1">Details <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+        </div>
+
+        <!-- Item 04 -->
+        <div onclick="goToSlide(5)" class="glass-card glass-card-interactive p-5 rounded-2xl cursor-pointer group flex flex-col justify-between h-56 border-t-2 border-emerald-400 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition">
+          <div class="relative z-10 flex justify-between items-start">
+            <span class="text-3xl font-display font-extrabold text-emerald-400">04</span>
+            <i class="fa-solid fa-person-running text-emerald-400 text-xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h3 class="font-bold text-white text-base leading-snug">Ernährung & Sport</h3>
+            <p class="text-[11px] text-slate-300 mt-1">Treibstoff für Muskeln</p>
+          </div>
+          <span class="relative z-10 text-xs text-emerald-400 flex items-center gap-1">Details <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+        </div>
+
+        <!-- Item 05 -->
+        <div onclick="goToSlide(6)" class="glass-card glass-card-interactive p-5 rounded-2xl cursor-pointer group flex flex-col justify-between h-56 border-t-2 border-teal-400 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" class="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition">
+          <div class="relative z-10 flex justify-between items-start">
+            <span class="text-3xl font-display font-extrabold text-teal-400">05</span>
+            <i class="fa-solid fa-flag-checkered text-teal-400 text-xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h3 class="font-bold text-white text-base leading-snug">Fazit & Quellen</h3>
+            <p class="text-[11px] text-slate-300 mt-1">Zusammenfassung & DGE</p>
+          </div>
+          <span class="relative z-10 text-xs text-teal-400 flex items-center gap-1">Details <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Zwei Seiten unserer Ernährung (Interactive Split Viewer & Photo Cards) -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-2">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-3">
+        <div>
+          <span class="text-emerald-400 font-mono text-xs font-bold tracking-widest uppercase">02. GEGENÜBERSTELLUNG</span>
+          <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Zwei Seiten unserer Ernährung</h2>
+        </div>
+        <p class="text-xs text-slate-300">Direkter Vergleich im Alltagsleben</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-2">
+        <!-- Gesunde Ernährung Photo Card -->
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-emerald-500 flex flex-col justify-between">
+          <div class="flex items-center space-x-3 mb-2">
+            <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" class="w-14 h-14 rounded-xl object-cover shadow-md border border-emerald-400/40">
+            <div>
+              <h3 class="font-display font-bold text-lg text-emerald-400 uppercase tracking-wide">GESUNDE ERNÄHRUNG</h3>
+              <p class="text-xs text-slate-300">Ausgewogen & Vitalitätsfördernd</p>
+            </div>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-200 mb-2">
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-emerald-500/20">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span><strong>Obst und Gemüse:</strong> Reif an Vitaminen, Mineralstoffen & Ballaststoffen</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-emerald-500/20">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span><strong>Vollkornprodukte & Hülsenfrüchte:</strong> Komplexe Kohlenhydrate</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-emerald-500/20">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span><strong>Eiweißquellen & gesunde Fette:</strong> Fisch, Eier, Nüsse, Pflanzliche Öle</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-emerald-500/20">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span><strong>Wasser:</strong> Reine Hydratation & Stoffwechselgrundlage</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Ungesunde Ernährung Photo Card -->
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-rose-500 flex flex-col justify-between">
+          <div class="flex items-center space-x-3 mb-2">
+            <img src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=300&q=80" class="w-14 h-14 rounded-xl object-cover shadow-md border border-rose-400/40">
+            <div>
+              <h3 class="font-display font-bold text-lg text-rose-400 uppercase tracking-wide">UNGESUNDE GEWOHNHEITEN</h3>
+              <p class="text-xs text-slate-300">Stark verarbeitet & kalorienreich</p>
+            </div>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-200 mb-2">
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-rose-500/20">
+              <i class="fa-solid fa-circle-xmark text-rose-400"></i>
+              <span><strong>Häufiger Konsum von Fast Food:</strong> Hohe gesättigte Fette</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-rose-500/20">
+              <i class="fa-solid fa-circle-xmark text-rose-400"></i>
+              <span><strong>Zuckerreiche Getränke & Süßigkeiten:</strong> Schnelle Blutzuckerschwankungen</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-rose-500/20">
+              <i class="fa-solid fa-circle-xmark text-rose-400"></i>
+              <span><strong>Zu viel Salz & verarbeitete Lebensmittel:</strong> künstliche Zusatzstoffe</span>
+            </li>
+            <li class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded-xl border border-rose-500/20">
+              <i class="fa-solid fa-circle-xmark text-rose-400"></i>
+              <span><strong>Zu wenig Vielfalt:</strong> Fehlende Mikro-Nährstoffe im Alltag</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Key Takeaway Banner -->
+      <div class="glass-pill p-3.5 rounded-2xl border-amber-500/40 flex items-center space-x-3 bg-amber-500/10">
+        <div class="p-2 bg-amber-500/20 text-amber-400 rounded-xl text-lg">
+          <i class="fa-solid fa-quote-left"></i>
+        </div>
+        <p class="text-xs md:text-sm text-amber-200 font-semibold leading-relaxed">
+          "Entscheidend sind Vielfalt, Ausgewogenheit und unsere langfristigen Essgewohnheiten."
+        </p>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Der Einfluss auf unser Leben (4 Quadrants with Photos) -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-3">
+      <div class="mb-4">
+        <span class="text-cyan-400 font-mono text-xs font-bold tracking-widest uppercase">03. LEBENSAUSWIRKUNGEN</span>
+        <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Ernährung betrifft mehr als unseren Teller</h2>
+        <p class="text-xs text-slate-300">Vier Kernbereiche unseres Lebens, die direkt von der Ernährung beeinflusst werden</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Area 1: Body -->
+        <div class="glass-card p-3.5 rounded-2xl border-t-2 border-emerald-400 flex items-center space-x-4">
+          <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shadow-lg border border-emerald-500/30 flex-shrink-0">
+          <div>
+            <h3 class="font-bold text-sm text-emerald-300 flex items-center gap-1.5 mb-1">
+              <i class="fa-solid fa-heart-pulse"></i> Körperliche Gesundheit
+            </h3>
+            <p class="text-xs text-slate-300 leading-snug">
+              Versorgung mit wichtigen Nährstoffen und Unterstützung normaler Körperfunktionen sowie des Immunsystems.
+            </p>
+          </div>
+        </div>
+
+        <!-- Area 2: Brain -->
+        <div class="glass-card p-3.5 rounded-2xl border-t-2 border-cyan-400 flex items-center space-x-4">
+          <img src="https://images.unsplash.com/photo-1516534775068-ba3e7458af70?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shadow-lg border border-cyan-500/30 flex-shrink-0">
+          <div>
+            <h3 class="font-bold text-sm text-cyan-300 flex items-center gap-1.5 mb-1">
+              <i class="fa-solid fa-brain"></i> Energie & Konzentration
+            </h3>
+            <p class="text-xs text-slate-300 leading-snug">
+              Ausgewogene Ernährung und regelmäßige Mahlzeiten können unser Energiegefühl und Fokussierung im Alltag beeinflussen.
+            </p>
+          </div>
+        </div>
+
+        <!-- Area 3: Mood -->
+        <div class="glass-card p-3.5 rounded-2xl border-t-2 border-amber-400 flex items-center space-x-4">
+          <img src="https://images.unsplash.com/photo-1499209974431-9dac3ada00d7?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shadow-lg border border-amber-500/30 flex-shrink-0">
+          <div>
+            <h3 class="font-bold text-sm text-amber-300 flex items-center gap-1.5 mb-1">
+              <i class="fa-solid fa-face-smile"></i> Stimmung & Wohlbefinden
+            </h3>
+            <p class="text-xs text-slate-300 leading-snug">
+              Ernährung ist ein wichtiger Einflussfaktor für das Wohlbefinden – eng verknüpft mit Schlaf, Stress und Bewegung.
+            </p>
+          </div>
+        </div>
+
+        <!-- Area 4: Sleep -->
+        <div class="glass-card p-3.5 rounded-2xl border-t-2 border-indigo-400 flex items-center space-x-4">
+          <img src="https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shadow-lg border border-indigo-500/30 flex-shrink-0">
+          <div>
+            <h3 class="font-bold text-sm text-indigo-300 flex items-center gap-1.5 mb-1">
+              <i class="fa-solid fa-bed"></i> Schlaf & Alltag
+            </h3>
+            <p class="text-xs text-slate-300 leading-snug">
+              Schwere Mahlzeiten und späte Koffeinzufuhr am Abend können die nächtliche Schlafqualität und Erholung beeinflussen.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Die 6 wichtigsten Nährstoffe (6 Photos Interactive Grid) -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-4">
+      <div class="mb-3">
+        <span class="text-amber-400 font-mono text-xs font-bold tracking-widest uppercase">04. NÄHRSTOFFKUNDE</span>
+        <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Was braucht unser Körper?</h2>
+        <p class="text-xs text-slate-300">Die sechs essenziellen Nährstoffe im Überblick</p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <!-- Nut 1 -->
+        <div onclick="selectNutrient('01', 'Kohlenhydrate', 'Wichtige primäre Energiequelle für Gehirn und Muskelaktivität.', 'Vollkornbrot, Haferflocken', 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-amber-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-amber-400">01. ENERGIE</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Kohlenhydrate</h3>
+            <p class="text-[10px] text-slate-400">z.B. Vollkornbrot</p>
+          </div>
+        </div>
+
+        <!-- Nut 2 -->
+        <div onclick="selectNutrient('02', 'Eiweiß (Proteine)', 'Unverzichtbar für den Aufbau und die Erhaltung von Gewebe und Muskeln.', 'Eier, Lachs, Quark', 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-emerald-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-emerald-400">02. BAUSTOFFE</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Eiweiß</h3>
+            <p class="text-[10px] text-slate-400">z.B. Eier & Fisch</p>
+          </div>
+        </div>
+
+        <!-- Nut 3 -->
+        <div onclick="selectNutrient('03', 'Fette', 'Liefern Energie und sind essenziell für Zellfunktionen und Hormonsynthese.', 'Avocado, Nüsse, Öl', 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-cyan-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-cyan-400">03. ZELLSCHUTZ</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Fette</h3>
+            <p class="text-[10px] text-slate-400">z.B. Avocado & Nüsse</p>
+          </div>
+        </div>
+
+        <!-- Nut 4 -->
+        <div onclick="selectNutrient('04', 'Vitamine', 'Unterstützen regulierende Prozesse und normale Körperfunktionen.', 'Beeren, Zitrusfrüchte', 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-rose-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-rose-400">04. IMMUNSYSTEM</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Vitamine</h3>
+            <p class="text-[10px] text-slate-400">z.B. Beeren & Orangen</p>
+          </div>
+        </div>
+
+        <!-- Nut 5 -->
+        <div onclick="selectNutrient('05', 'Mineralstoffe', 'Unerlässlich für Knochen, Nervensignale und Elektrolythaushalt.', 'Grünes Gemüse, Saaten', 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-purple-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-purple-400">05. FUNKTIONEN</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Mineralstoffe</h3>
+            <p class="text-[10px] text-slate-400">z.B. Grünes Gemüse</p>
+          </div>
+        </div>
+
+        <!-- Nut 6 -->
+        <div onclick="selectNutrient('06', 'Wasser', 'Hauptbestandteil des Körpers, löst Nährstoffe und reguliert die Temperatur.', 'Reines Quellwasser', 'https://images.unsplash.com/photo-1548839140-29a749e1cf4e?auto=format&fit=crop&w=300&q=80')" class="glass-card p-3 rounded-2xl cursor-pointer hover:border-blue-400 transition group flex items-center space-x-3">
+          <img src="https://images.unsplash.com/photo-1548839140-29a749e1cf4e?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-blue-400">06. FLÜSSIGKEIT</span>
+            <h3 class="font-bold text-white text-xs md:text-sm">Wasser</h3>
+            <p class="text-[10px] text-slate-400">z.B. Frischglas Wasser</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nutrient Inspector Card -->
+      <div id="nutrient-detail" class="mt-4 glass-pill p-3.5 rounded-2xl flex items-center space-x-4 border border-emerald-500/30">
+        <img id="nut-img" src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80" class="w-14 h-14 rounded-xl object-cover border border-emerald-400/40">
+        <div class="flex-1">
+          <div class="flex items-center space-x-2">
+            <span id="nut-num" class="text-xs font-mono font-bold text-emerald-400">01</span>
+            <h4 id="nut-title" class="font-bold text-white text-sm">Kohlenhydrate</h4>
+          </div>
+          <p id="nut-desc" class="text-xs text-slate-300">Wichtige primäre Energiequelle für Gehirn und Muskelaktivität.</p>
+        </div>
+        <span id="nut-source" class="text-[10px] bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full whitespace-nowrap hidden sm:inline">Quelle: Vollkornbrot</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Ernährung und Sport (Athlete & Meals Photos) -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-5">
+      <div class="mb-3">
+        <span class="text-emerald-400 font-mono text-xs font-bold tracking-widest uppercase">05. LEISTUNG & BEWEGUNG</span>
+        <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Ernährung und Sport</h2>
+        <p class="text-xs text-slate-300">Treibstoff für Aktivität, Regeneration und Vitalität</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <!-- Athlete Photo Card -->
+        <div class="md:col-span-4">
+          <div class="glass-card p-2 rounded-2xl relative overflow-hidden border border-emerald-500/30">
+            <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80" class="w-full h-60 object-cover rounded-xl">
+            <div class="absolute bottom-4 left-4 right-4 glass-pill p-2 rounded-xl text-[11px] text-white font-medium text-center">
+              "Ernährung und Bewegung ergänzen sich in einem gesunden Lebensstil."
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Pillars & Meal Cards -->
+        <div class="md:col-span-8 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="glass-card p-3 rounded-xl border-t-2 border-amber-400">
+              <span class="text-[10px] font-mono text-amber-400 font-bold">01. ENERGIE</span>
+              <h4 class="font-bold text-white text-xs">Für Bewegung</h4>
+              <p class="text-[11px] text-slate-300 mt-1">Kohlenhydrate sind eine wichtige Energiequelle.</p>
+            </div>
+
+            <div class="glass-card p-3 rounded-xl border-t-2 border-emerald-400">
+              <span class="text-[10px] font-mono text-emerald-400 font-bold">02. MUSKELN</span>
+              <h4 class="font-bold text-white text-xs">Aufbau & Erhalt</h4>
+              <p class="text-[11px] text-slate-300 mt-1">Eiweiß trägt zur Muskelmasse bei.</p>
+            </div>
+
+            <div class="glass-card p-3 rounded-xl border-t-2 border-cyan-400">
+              <span class="text-[10px] font-mono text-cyan-400 font-bold">03. REHYDRATION</span>
+              <h4 class="font-bold text-white text-xs">Flüssigkeit</h4>
+              <p class="text-[11px] text-slate-300 mt-1">Ausreichend Wasser bei Anstrengung.</p>
+            </div>
+          </div>
+
+          <!-- Meals -->
+          <div class="glass-card p-3.5 rounded-2xl border border-white/10 space-y-2">
+            <h4 class="text-xs font-mono text-emerald-400 uppercase font-bold tracking-wider"><i class="fa-solid fa-utensils mr-1"></i> Mahlzeitbeispiele für Sportler</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="flex items-center space-x-3 bg-slate-900/60 p-2 rounded-xl border border-white/5">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-lg object-cover">
+                <div>
+                  <h5 class="font-bold text-white text-xs">Reis mit Gemüse & Hühnchen</h5>
+                  <p class="text-[10px] text-slate-400">Komplexe Carbs & mageres Eiweiß</p>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3 bg-slate-900/60 p-2 rounded-xl border border-white/5">
+                <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-lg object-cover">
+                <div>
+                  <h5 class="font-bold text-white text-xs">Joghurt mit Haferflocken & Obst</h5>
+                  <p class="text-[10px] text-slate-400">Energiespender & Vitamine</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Fazit - Was nehmen wir mit? (Buddha Bowl Photo) -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-6">
+      <div class="mb-4">
+        <span class="text-teal-400 font-mono text-xs font-bold tracking-widest uppercase">06. ZUSAMMENFASSUNG</span>
+        <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Was nehmen wir mit?</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center mb-3">
+        <div class="md:col-span-7 space-y-3">
+          <div class="glass-card p-3.5 rounded-2xl border-l-4 border-emerald-400 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-400/20 text-emerald-400 flex items-center justify-center font-bold text-sm">01</div>
+            <div>
+              <h3 class="font-bold text-white text-sm">Ausgewogen essen</h3>
+              <p class="text-xs text-slate-300">Vielfalt und passende Mengen sind der Schlüssel.</p>
+            </div>
+          </div>
+
+          <div class="glass-card p-3.5 rounded-2xl border-l-4 border-cyan-400 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-cyan-400/20 text-cyan-400 flex items-center justify-center font-bold text-sm">02</div>
+            <div>
+              <h3 class="font-bold text-white text-sm">Den Körper versorgen</h3>
+              <p class="text-xs text-slate-300">Nährstoffe und ausreichend Wasser täglich bereitstellen.</p>
+            </div>
+          </div>
+
+          <div class="glass-card p-3.5 rounded-2xl border-l-4 border-amber-400 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold text-sm">03</div>
+            <div>
+              <h3 class="font-bold text-white text-sm">Aktiv leben</h3>
+              <p class="text-xs text-slate-300">Ernährung, Bewegung, Schlaf und Erholung gehören zusammen.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buddha Bowl Photo -->
+        <div class="md:col-span-5">
+          <div class="glass-card p-2 rounded-2xl border border-emerald-500/30 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" class="w-full h-52 object-cover rounded-xl">
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Quote -->
+      <div class="glass-pill p-3.5 rounded-2xl text-center border-emerald-500/30">
+        <p class="text-xs md:text-sm text-emerald-300 font-semibold italic">
+          "Gesundheit entsteht nicht durch eine einzelne Mahlzeit, sondern durch unsere Gewohnheiten im Alltag."
+        </p>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Quellen & Verwendete Hilfsmittel -->
+    <div class="slide-card flex flex-col justify-center p-3 md:p-6" id="slide-7">
+      <div class="mb-4">
+        <span class="text-cyan-400 font-mono text-xs font-bold tracking-widest uppercase">07. REFERENZEN</span>
+        <h2 class="font-display text-2xl md:text-4xl font-bold text-white">Quellen & Hilfsmittel</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Science Sources -->
+        <div class="glass-card p-5 rounded-2xl border-l-4 border-emerald-500 space-y-3">
+          <div class="flex items-center space-x-3">
+            <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=200&q=80" class="w-12 h-12 rounded-xl object-cover">
+            <div>
+              <h3 class="font-bold text-white text-base">Wissenschaftliche Quellen</h3>
+              <p class="text-xs text-slate-400">Offizielle Fachgesellschaften</p>
+            </div>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-300">
+            <li class="flex items-start space-x-2">
+              <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+              <span><strong>Deutsche Gesellschaft für Ernährung (DGE):</strong> Empfehlungen für eine gesunde Ernährung & Der DGE-Ernährungskreis</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+              <span><strong>World Health Organization (WHO):</strong> Healthy diet Guidelines & globale Richtlinien</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Digital AI Assistance Tools -->
+        <div class="glass-card p-5 rounded-2xl border-l-4 border-cyan-500 space-y-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl font-bold">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">Verwendete Hilfsmittel</h3>
+              <p class="text-xs text-slate-400">Gestaltung & Strukturierung</p>
+            </div>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-300">
+            <li class="flex items-start space-x-2">
+              <i class="fa-solid fa-robot text-cyan-400 mt-0.5"></i>
+              <span><strong>Canva AI & ChatGPT:</strong> Unterstützung bei visueller Gestaltung, Inhaltsstrukturierung und Redaktion</span>
+            </li>
+            <li class="flex items-start space-x-2">
+              <i class="fa-solid fa-cubes text-cyan-400 mt-0.5"></i>
+              <span><strong>Three.js & WebGL:</strong> Interaktive 3D-Visualisierung der Nahrungspartikel</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Q&A / Abschluss -->
+    <div class="slide-card flex flex-col justify-center items-center text-center p-6 md:p-12" id="slide-8">
+      <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mb-4 shadow-2xl shadow-emerald-500/30 animate-bounce">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+
+      <h2 class="font-display font-black text-3xl md:text-5xl text-white mb-3 glow-text">
+        Vielen Dank für Ihre Aufmerksamkeit!
+      </h2>
+
+      <p class="text-base md:text-xl text-emerald-300 font-light mb-6">
+        Haben Sie noch Fragen?
+      </p>
+
+      <p class="text-xs text-slate-400 mb-8">Vortrag gehalten von <strong>Omar Al sharari</strong> • 19.10.2026</p>
+
+      <button onclick="goToSlide(0)" class="px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-white/10 transition">
+        <i class="fa-solid fa-rotate-left mr-2"></i> Vortrag Neustarten
+      </button>
+    </div>
+
+  </main>
+
+  <!-- NAVIGATION FOOTER BAR -->
+  <footer class="relative z-20 max-w-7xl mx-auto w-full px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+    
+    <!-- Direct Slide Navigation Dots -->
+    <div class="flex items-center space-x-2" id="dots-container"></div>
+
+    <!-- Navigation Prev / Next Controls -->
+    <div class="flex items-center space-x-3">
+      <button onclick="prevSlide()" class="px-4 py-2 rounded-xl glass-card text-xs font-bold text-white hover:bg-emerald-500/20 transition flex items-center gap-2">
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>Zurück</span>
+      </button>
+
+      <span class="text-xs font-mono text-slate-300" id="slide-counter">1 / 9</span>
+
+      <button onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs hover:bg-emerald-400 transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+        <span>Weiter</span>
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Slide Navigation State
+    let currentSlide = 0;
+    const totalSlides = 9;
+    let isAutoplay = false;
+    let autoplayTimer = null;
+    let audioContext = null;
+
+    // Presenter Moderation Notes for Omar Al sharari
+    const slideNotes = [
+      "Begrüßen Sie das Publikum und die Prüfer. Betonen Sie, dass Ernährung die direkte Grundlage unserer täglichen Lebensqualität bildet.",
+      "Geben Sie einen kurzen Überblick über die Struktur des Vortrags. Erwähnen Sie die 5 Hauptkapitel.",
+      "Stellen Sie die Gegenüberstellung vor. Heben Sie hervor, dass langfristige Gewohnheiten entscheidend sind.",
+      "Erläutern Sie die vier Lebensbereiche: Gesundheit, Energie, Psyche und Schlaf.",
+      "Erklären Sie die 6 wichtigsten Nährstoffe. Klicken Sie auf einzelne Kacheln für Details.",
+      "Zeigen Sie auf, wie Ernährung und Sport zusammenwirken: Kohlenhydrate für Energie, Protein für Muskeln.",
+      "Fassen Sie die drei Kernaussagen zusammen.",
+      "Nennen Sie die wissenschaftlichen Quellen (DGE & WHO) sowie die benutzten Tools (Canva AI, ChatGPT).",
+      "Bedanken Sie sich beim Publikum und eröffnen Sie die Fragerunde."
+    ];
+
+    // Initialize Navigation Dots
+    const dotsContainer = document.getElementById('dots-container');
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('button');
+      dot.className = `w-2.5 h-2.5 rounded-full transition-all ${i === 0 ? 'bg-emerald-400 w-7' : 'bg-slate-700 hover:bg-slate-500'}`;
+      dot.onclick = () => goToSlide(i);
+      dot.title = `Folie ${i + 1}`;
+      dotsContainer.appendChild(dot);
+    }
+
+    // Slide Update Logic
+    function updateSlides() {
+      const slides = document.querySelectorAll('.slide-card');
+      slides.forEach((slide, idx) => {
+        slide.classList.remove('active', 'prev-out');
+        if (idx === currentSlide) {
+          slide.classList.add('active');
+        } else if (idx < currentSlide) {
+          slide.classList.add('prev-out');
+        }
+      });
+
+      // Update dots
+      const dots = dotsContainer.children;
+      for (let i = 0; i < dots.length; i++) {
+        if (i === currentSlide) {
+          dots[i].className = 'w-7 h-2.5 rounded-full bg-emerald-400 transition-all';
+        } else {
+          dots[i].className = 'w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-slate-500 transition-all';
+        }
+      }
+
+      // Update progress bar & counter
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+      document.getElementById('slide-counter').innerText = `${currentSlide + 1} / ${totalSlides}`;
+
+      // Update presenter notes
+      document.getElementById('note-content').innerText = slideNotes[currentSlide];
+
+      playBeep();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlides();
+      } else if (isAutoplay) {
+        currentSlide = 0;
+        updateSlides();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlides();
+      }
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSlides();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNotes();
+      }
+    });
+
+    // Toggle Notes
+    function toggleNotes() {
+      document.getElementById('presenter-notes').classList.toggle('hidden');
+    }
+
+    // Toggle Autoplay
+    function toggleAutoplay() {
+      isAutoplay = !isAutoplay;
+      const icon = document.getElementById('autoplay-icon');
+      const text = document.getElementById('autoplay-text');
+
+      if (isAutoplay) {
+        icon.className = 'fa-solid fa-pause text-cyan-400';
+        text.innerText = 'Stop';
+        autoplayTimer = setInterval(nextSlide, 7000);
+      } else {
+        icon.className = 'fa-solid fa-play text-cyan-400';
+        text.innerText = 'Auto';
+        clearInterval(autoplayTimer);
+      }
+    }
+
+    // Toggle Fullscreen
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Nutrient Selection Helper
+    function selectNutrient(num, title, desc, source, imgUrl) {
+      document.getElementById('nut-num').innerText = num;
+      document.getElementById('nut-title').innerText = title;
+      document.getElementById('nut-desc').innerText = desc;
+      document.getElementById('nut-source').innerText = `Beispiele: ${source}`;
+      document.getElementById('nut-img').src = imgUrl;
+    }
+
+    // Web Audio Feedback Sound
+    let soundEnabled = false;
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      icon.className = soundEnabled ? 'fa-solid fa-volume-high text-emerald-400' : 'fa-solid fa-volume-xmark text-emerald-400';
+      if (soundEnabled) playBeep();
+    }
+
+    function playBeep() {
+      if (!soundEnabled) return;
+      try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400 + currentSlide * 30, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    // THREE.JS FOOD & VITALITY BACKGROUND SIMULATION
+    window.addEventListener('load', () => {
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 25;
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0x34d399, 1.2);
+      dirLight.position.set(10, 20, 15);
+      scene.add(dirLight);
+
+      // Floating Food & Organic Elements Group
+      const foodGroup = new THREE.Group();
+
+      // 1. Central Floating 3D Plate Ring Orbit
+      const ringGeo = new THREE.TorusGeometry(12, 0.15, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.15 });
+      const plateRing = new THREE.Mesh(ringGeo, ringMat);
+      plateRing.rotation.x = Math.PI / 3;
+      foodGroup.add(plateRing);
+
+      // 2. Botanical Leaf Shapes (Dodecahedrons transformed)
+      const leafGeo = new THREE.DodecahedronGeometry(0.7, 0);
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3, metalness: 0.1, transparent: true, opacity: 0.7 });
+      
+      for (let i = 0; i < 20; i++) {
+        const leaf = new THREE.Mesh(leafGeo, leafMat);
+        leaf.position.set((Math.random() - 0.5) * 45, (Math.random() - 0.5) * 45, (Math.random() - 0.5) * 30);
+        leaf.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        leaf.scale.set(0.6, 1.4, 0.2); // Leaf-like shape
+        leaf.userData = { speedX: (Math.random() - 0.5) * 0.005, speedY: (Math.random() - 0.5) * 0.008, rotSpeed: Math.random() * 0.01 };
+        foodGroup.add(leaf);
+      }
+
+      // 3. Orange/Apple Fruit Spheres
+      const fruitGeo = new THREE.SphereGeometry(0.6, 16, 16);
+      const orangeMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.4 });
+      const appleMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3 });
+
+      for (let i = 0; i < 15; i++) {
+        const fruit = new THREE.Mesh(fruitGeo, i % 2 === 0 ? orangeMat : appleMat);
+        fruit.position.set((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, (Math.random() - 0.5) * 25);
+        fruit.userData = { speedX: (Math.random() - 0.5) * 0.006, speedY: (Math.random() - 0.5) * 0.006, rotSpeed: Math.random() * 0.015 };
+        foodGroup.add(fruit);
+      }
+
+      // 4. Vitamin Orbs / Water Droplets
+      const dropletGeo = new THREE.IcosahedronGeometry(0.3, 2);
+      const dropletMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4, wireframe: true, transparent: true, opacity: 0.4 });
+
+      for (let i = 0; i < 25; i++) {
+        const droplet = new THREE.Mesh(dropletGeo, dropletMat);
+        droplet.position.set((Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 35);
+        droplet.userData = { speedX: (Math.random() - 0.5) * 0.01, speedY: (Math.random() - 0.5) * 0.01, rotSpeed: 0.02 };
+        foodGroup.add(droplet);
+      }
+
+      scene.add(foodGroup);
+
+      // Mouse Parallax Interaction
+      let mouseX = 0;
+      let mouseY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      // Render Loop
+      function animate() {
+        requestAnimationFrame(animate);
+
+        plateRing.rotation.z += 0.002;
+
+        foodGroup.children.forEach(child => {
+          if (child.userData.speedX) {
+            child.position.x += child.userData.speedX;
+            child.position.y += child.userData.speedY;
+            child.rotation.x += child.userData.rotSpeed;
+            child.rotation.y += child.userData.rotSpeed;
+
+            // Wrap around boundaries
+            if (Math.abs(child.position.x) > 25) child.position.x *= -0.9;
+            if (Math.abs(child.position.y) > 25) child.position.y *= -0.9;
+          }
+        });
+
+        // Parallax Camera movement
+        camera.position.x += (mouseX * 2.5 - camera.position.x) * 0.04;
+        camera.position.y += (-mouseY * 2.5 - camera.position.y) * 0.04;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // Window Resize Listener
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    });
+  </script>
+</body>
+</html>
